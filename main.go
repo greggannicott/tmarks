@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +20,7 @@ func main() {
 				Name:  "add",
 				Usage: "Add a tmux session",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Coming soon")
+					addBookmark()
 					return nil
 				},
 			},

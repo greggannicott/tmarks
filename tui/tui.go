@@ -11,7 +11,7 @@ import (
 
 type model struct {
 	bookmarks []bookmark
-	selected  int
+	cursor    int
 	keys      keyMap
 	help      help.Model
 }
@@ -19,16 +19,18 @@ type model struct {
 type keyMap struct {
 	Quit key.Binding
 	Help key.Binding
+	Up   key.Binding
+	Down key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Help}
+	return []key.Binding{k.Down, k.Up, k.Quit, k.Help}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Quit}, // first column
-		{k.Help}, // second column
+		{k.Down, k.Up, k.Quit}, // first column
+		{k.Help},               // second column
 	}
 }
 
@@ -40,6 +42,14 @@ var DefaultKeyMap = keyMap{
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "toggle help"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("j", "down"),
+		key.WithHelp("j", "navigate down"),
+	),
+	Up: key.NewBinding(
+		key.WithKeys("k", "up"),
+		key.WithHelp("k", "navigate up"),
 	),
 }
 
@@ -53,7 +63,7 @@ func DisplayList() {
 func initModel() model {
 	return model{
 		bookmarks: []bookmark{},
-		selected:  0,
+		cursor:    0,
 		help:      help.New(),
 		keys:      DefaultKeyMap,
 	}
@@ -67,6 +77,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, DefaultKeyMap.Down):
+			if m.cursor == len(m.bookmarks)-1 {
+				m.cursor = 0
+			} else {
+				m.cursor++
+			}
+		case key.Matches(msg, DefaultKeyMap.Up):
+			if m.cursor == 0 {
+				m.cursor = len(m.bookmarks) - 1
+			} else {
+				m.cursor--
+			}
 		case key.Matches(msg, DefaultKeyMap.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Help):
@@ -86,7 +108,7 @@ func (m model) View() string {
 	if len(m.bookmarks) > 0 {
 		for i, b := range m.bookmarks {
 			var selector string
-			if i == m.selected {
+			if i == m.cursor {
 				selector = "> "
 			} else {
 				selector = "  "

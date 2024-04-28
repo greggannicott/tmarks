@@ -11,6 +11,7 @@ import (
 
 type model struct {
 	bookmarks []bookmark
+	selected  int
 	keys      keyMap
 	help      help.Model
 }
@@ -52,6 +53,7 @@ func DisplayList() {
 func initModel() model {
 	return model{
 		bookmarks: []bookmark{},
+		selected:  0,
 		help:      help.New(),
 		keys:      DefaultKeyMap,
 	}
@@ -82,8 +84,14 @@ func (m model) View() string {
 	sb.WriteString("Bookmarks\n")
 	sb.WriteString("---------\n\n")
 	if len(m.bookmarks) > 0 {
-		for _, b := range m.bookmarks {
-			sb.WriteString("* " + b.name + "\n")
+		for i, b := range m.bookmarks {
+			var selector string
+			if i == m.selected {
+				selector = "> "
+			} else {
+				selector = "  "
+			}
+			sb.WriteString(selector + b.name + "\n")
 		}
 	} else {
 		sb.WriteString("No bookmarks saved...\n")

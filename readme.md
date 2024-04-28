@@ -23,3 +23,13 @@ To add your current session to the list, run:
 ```bash
 tmarks add
 ```
+
+### Opening a Session
+
+To display a list of saved sessions, run:
+
+```bash
+tmarks list
+```
+
+Navigate to the session you're after and press Enter to open it.

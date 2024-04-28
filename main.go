@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"tmarks/bookmarks"
+	"tmarks/tui"
 
 	"github.com/urfave/cli/v2"
 )
@@ -17,10 +19,18 @@ func main() {
 		Version:         Version,
 		Commands: []*cli.Command{
 			{
-				Name:  "add",
-				Usage: "Add a tmux session",
+				Name:  "list",
+				Usage: "List and select from your bookmarks",
 				Action: func(cCtx *cli.Context) error {
-					addBookmark()
+					tui.DisplayList()
+					return nil
+				},
+			},
+			{
+				Name:  "add",
+				Usage: "Add a tmux session bookmark",
+				Action: func(cCtx *cli.Context) error {
+					bookmarks.Add()
 					return nil
 				},
 			},

@@ -1,4 +1,4 @@
-package main
+package bookmarks
 
 import (
 	"encoding/json"
@@ -12,16 +12,21 @@ import (
 	"github.com/adrg/xdg"
 )
 
-type bookmark struct {
+type Bookmark struct {
 	Id   string
 	Name string
 }
 
 type appState struct {
-	Bookmarks []bookmark
+	Bookmarks []Bookmark
 }
 
-func addBookmark() {
+func GetAll() []Bookmark {
+	state, _ := readStateFile()
+	return state.Bookmarks
+}
+
+func Add() {
 	existingState, stateFilePath := readStateFile()
 	b := createBookmarkForCurrentSession()
 	addBookmarkToArray(&existingState, b)
@@ -46,7 +51,7 @@ func readStateFile() (appState, string) {
 }
 
 func createEmptyFile(fp string) {
-	state := appState{Bookmarks: []bookmark{}}
+	state := appState{Bookmarks: []Bookmark{}}
 	stateAsJson := marshalStateFile(state)
 	writeStateFile(fp, stateAsJson)
 }
@@ -68,18 +73,18 @@ func unmarshalStateFile(b []byte) appState {
 	return contents
 }
 
-func createBookmarkForCurrentSession() bookmark {
+func createBookmarkForCurrentSession() Bookmark {
 	cmd := exec.Command("tmux", "display-message", "-p", "#S")
 	sessionName, err := cmd.Output()
 	if err != nil {
 		utils.HandleFatalError("obtaining tmux session name", err)
 	}
 	cleanSessionName := strings.ReplaceAll(string(sessionName), "\n", "")
-	return bookmark{Id: cleanSessionName, Name: cleanSessionName}
+	return Bookmark{Id: cleanSessionName, Name: cleanSessionName}
 }
 
-func addBookmarkToArray(as *appState, b bookmark) {
-	exists := slices.ContainsFunc((*as).Bookmarks, func(cb bookmark) bool {
+func addBookmarkToArray(as *appState, b Bookmark) {
+	exists := slices.ContainsFunc((*as).Bookmarks, func(cb Bookmark) bool {
 		return b.Id == cb.Id
 	})
 	if !exists {

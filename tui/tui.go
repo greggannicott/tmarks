@@ -10,10 +10,11 @@ import (
 )
 
 type model struct {
-	bookmarks []bookmark
-	cursor    int
-	keys      keyMap
-	help      help.Model
+	bookmarks       []bookmark
+	cursor          int
+	keys            keyMap
+	help            help.Model
+	quittingMessage string
 }
 
 type errMsg struct {
@@ -104,17 +105,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Open):
 			sn := m.bookmarks[m.cursor].name
-			openTmuxSession(sn)
+			return m, openTmuxSession(sn)
 		}
 	case getBookmarksMsg:
 		m.bookmarks = msg.bookmarks
-	case openSessionMsg:
+	case sessionOpenedMsg:
+		m.quittingMessage = "\nLaunching the '" + msg.sessionName + "' session..."
 		return m, tea.Quit
 	}
 	return m, nil
 }
 
 func (m model) View() string {
+	if len(m.quittingMessage) > 0 {
+		return m.quittingMessage + "\n\n"
+	}
 	var sb strings.Builder
 	sb.WriteString("\n")
 	sb.WriteString("Bookmarks\n")

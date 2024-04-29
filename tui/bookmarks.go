@@ -11,7 +11,7 @@ type bookmark struct {
 	name string
 }
 
-type getBookmarksMsg struct {
+type bookmarksRetrievedMsg struct {
 	bookmarks []bookmark
 }
 
@@ -23,7 +23,7 @@ func getAllBookmarks() tea.Msg {
 			name: v.Name,
 		})
 	}
-	return getBookmarksMsg{
+	return bookmarksRetrievedMsg{
 		bookmarks: bks,
 	}
 }

@@ -107,7 +107,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			sn := m.bookmarks[m.cursor].name
 			return m, openTmuxSession(sn)
 		}
-	case getBookmarksMsg:
+	case bookmarksRetrievedMsg:
 		m.bookmarks = msg.bookmarks
 	case sessionOpenedMsg:
 		m.quittingMessage = "\nLaunching the '" + msg.sessionName + "' session..."

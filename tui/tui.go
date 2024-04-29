@@ -16,21 +16,26 @@ type model struct {
 	help      help.Model
 }
 
+type errMsg struct {
+	err error
+}
+
 type keyMap struct {
 	Quit key.Binding
 	Help key.Binding
 	Up   key.Binding
 	Down key.Binding
+	Open key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Down, k.Up, k.Quit, k.Help}
+	return []key.Binding{k.Down, k.Up, k.Open, k.Quit, k.Help}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Down, k.Up, k.Quit}, // first column
-		{k.Help},               // second column
+		{k.Down, k.Up, k.Open, k.Quit}, // first column
+		{k.Help},                       // second column
 	}
 }
 
@@ -50,6 +55,10 @@ var DefaultKeyMap = keyMap{
 	Up: key.NewBinding(
 		key.WithKeys("k", "up"),
 		key.WithHelp("k", "navigate up"),
+	),
+	Open: key.NewBinding(
+		key.WithKeys("enter", "return", "l"),
+		key.WithHelp("enter", "open session"),
 	),
 }
 
@@ -93,9 +102,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Open):
+			sn := m.bookmarks[m.cursor].name
+			openTmuxSession(sn)
 		}
 	case getBookmarksMsg:
 		m.bookmarks = msg.bookmarks
+	case openSessionMsg:
+		return m, tea.Quit
 	}
 	return m, nil
 }

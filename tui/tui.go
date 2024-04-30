@@ -51,12 +51,12 @@ var DefaultKeyMap = keyMap{
 		key.WithHelp("?", "toggle help"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("j", "down"),
-		key.WithHelp("j", "navigate down"),
+		key.WithKeys("tab", "down", "alt+j"),
+		key.WithHelp("down", "navigate down"),
 	),
 	Up: key.NewBinding(
-		key.WithKeys("k", "up"),
-		key.WithHelp("k", "navigate up"),
+		key.WithKeys("shift+tab", "up", "alt+k"),
+		key.WithHelp("up", "navigate up"),
 	),
 	Open: key.NewBinding(
 		key.WithKeys("enter", "return", "l"),

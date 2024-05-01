@@ -15,6 +15,7 @@ type model struct {
 	keys                 keyMap
 	help                 help.Model
 	quittingMessage      string
+	successMessage       string
 	nonFatalErrorMessage string
 }
 
@@ -64,7 +65,7 @@ var DefaultKeyMap = keyMap{
 		key.WithHelp("enter", "open session"),
 	),
 	Delete: key.NewBinding(
-		key.WithKeys("d"),
+		key.WithKeys("d", "backspace"),
 		key.WithHelp("d", "delete session"),
 	),
 }
@@ -112,12 +113,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Open):
 			sn := m.bookmarks[m.cursor].name
 			return m, openTmuxSession(sn)
+		case key.Matches(msg, m.keys.Delete):
+			sn := m.bookmarks[m.cursor].name
+			return m, deleteBookmark(sn)
 		}
 	case bookmarksRetrievedMsg:
 		m.bookmarks = msg.bookmarks
+		m.cursor = 0
 	case sessionOpenedMsg:
 		m.quittingMessage = "\nLaunching the '" + msg.sessionName + "' session..."
 		return m, tea.Quit
+	case bookmarkDeletedMsg:
+		m.successMessage = "Bookmark '" + msg.sessionName + "' deleted."
+		return m, getAllBookmarks
 	case sessionNotFound:
 		m.nonFatalErrorMessage = "Unable to open '" + msg.sessionName + "': no running session with that name found."
 	}
@@ -144,6 +152,9 @@ func (m model) View() string {
 		}
 	} else {
 		sb.WriteString("No bookmarks saved...\n")
+	}
+	if len(m.successMessage) > 0 {
+		sb.WriteString("\n" + m.successMessage + "\n")
 	}
 	if len(m.nonFatalErrorMessage) > 0 {
 		sb.WriteString("\n" + m.nonFatalErrorMessage + "\n")

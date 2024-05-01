@@ -23,21 +23,22 @@ type errMsg struct {
 }
 
 type keyMap struct {
-	Quit key.Binding
-	Help key.Binding
-	Up   key.Binding
-	Down key.Binding
-	Open key.Binding
+	Quit   key.Binding
+	Help   key.Binding
+	Up     key.Binding
+	Down   key.Binding
+	Open   key.Binding
+	Delete key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Down, k.Up, k.Open, k.Quit, k.Help}
+	return []key.Binding{k.Down, k.Up, k.Open, k.Delete, k.Quit, k.Help}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Down, k.Up, k.Open, k.Quit}, // first column
-		{k.Help},                       // second column
+		{k.Down, k.Up, k.Open, k.Delete}, // first column
+		{k.Help, k.Quit},                 // second column
 	}
 }
 
@@ -51,16 +52,20 @@ var DefaultKeyMap = keyMap{
 		key.WithHelp("?", "toggle help"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("tab", "down", "alt+j"),
-		key.WithHelp("down", "navigate down"),
+		key.WithKeys("tab", "down", "j"),
+		key.WithHelp("j", "navigate down"),
 	),
 	Up: key.NewBinding(
-		key.WithKeys("shift+tab", "up", "alt+k"),
-		key.WithHelp("up", "navigate up"),
+		key.WithKeys("shift+tab", "up", "k"),
+		key.WithHelp("k", "navigate up"),
 	),
 	Open: key.NewBinding(
 		key.WithKeys("enter", "return", "l"),
 		key.WithHelp("enter", "open session"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete session"),
 	),
 }
 

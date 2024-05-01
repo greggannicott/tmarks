@@ -44,8 +44,8 @@ func Delete(sn string) {
 func readStateFile() (appState, string) {
 	filePath := fmt.Sprintf("%s/tmarks/app-state.json", xdg.StateHome)
 
-	_, fileExistsErr := os.Stat(filePath)
-	if fileExistsErr != nil {
+	stat, fileExistsErr := os.Stat(filePath)
+	if fileExistsErr != nil || stat.Size() == 0 {
 		createEmptyFile(filePath)
 	}
 

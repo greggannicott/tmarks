@@ -30,15 +30,22 @@ func Add() {
 	existingState, stateFilePath := readStateFile()
 	b := createBookmarkForCurrentSession()
 	addBookmarkToArray(&existingState, b)
-	stateAsJson := marshalStateFile(existingState)
-	writeStateFile(stateFilePath, stateAsJson)
+	writeStateFile(stateFilePath, existingState)
+}
+
+func Delete(sn string) {
+	state, stateFilePath := readStateFile()
+	state.Bookmarks = slices.DeleteFunc(state.Bookmarks, func(e Bookmark) bool {
+		return (e.Name == sn)
+	})
+	writeStateFile(stateFilePath, state)
 }
 
 func readStateFile() (appState, string) {
 	filePath := fmt.Sprintf("%s/tmarks/app-state.json", xdg.StateHome)
 
-	_, fileExistsErr := os.Stat(filePath)
-	if fileExistsErr != nil {
+	stat, fileExistsErr := os.Stat(filePath)
+	if fileExistsErr != nil || stat.Size() == 0 {
 		createEmptyFile(filePath)
 	}
 
@@ -52,8 +59,7 @@ func readStateFile() (appState, string) {
 
 func createEmptyFile(fp string) {
 	state := appState{Bookmarks: []Bookmark{}}
-	stateAsJson := marshalStateFile(state)
-	writeStateFile(fp, stateAsJson)
+	writeStateFile(fp, state)
 }
 
 func marshalStateFile(state appState) []byte {
@@ -92,7 +98,8 @@ func addBookmarkToArray(as *appState, b Bookmark) {
 	}
 }
 
-func writeStateFile(stateFilePath string, json []byte) {
+func writeStateFile(stateFilePath string, state appState) {
+	json := marshalStateFile(state)
 	writeErr := os.WriteFile(stateFilePath, []byte(json), 0666)
 	if writeErr != nil {
 		utils.HandleFatalError("writing state file", writeErr)

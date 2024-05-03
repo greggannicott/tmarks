@@ -1,20 +1,25 @@
 package tui
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"tmarks/utils"
 
+	"github.com/adrg/xdg"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type model struct {
+	log                  *os.File
 	bookmarks            []bookmark
 	cursor               int
 	keys                 keyMap
 	help                 help.Model
 	quittingMessage      string
+	successMessage       string
 	nonFatalErrorMessage string
 }
 
@@ -23,21 +28,22 @@ type errMsg struct {
 }
 
 type keyMap struct {
-	Quit key.Binding
-	Help key.Binding
-	Up   key.Binding
-	Down key.Binding
-	Open key.Binding
+	Quit   key.Binding
+	Help   key.Binding
+	Up     key.Binding
+	Down   key.Binding
+	Open   key.Binding
+	Delete key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Down, k.Up, k.Open, k.Quit, k.Help}
+	return []key.Binding{k.Down, k.Up, k.Open, k.Delete, k.Quit, k.Help}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Down, k.Up, k.Open, k.Quit}, // first column
-		{k.Help},                       // second column
+		{k.Down, k.Up, k.Open, k.Delete}, // first column
+		{k.Help, k.Quit},                 // second column
 	}
 }
 
@@ -51,28 +57,39 @@ var DefaultKeyMap = keyMap{
 		key.WithHelp("?", "toggle help"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("tab", "down", "alt+j"),
-		key.WithHelp("down", "navigate down"),
+		key.WithKeys("tab", "down", "j"),
+		key.WithHelp("j", "navigate down"),
 	),
 	Up: key.NewBinding(
-		key.WithKeys("shift+tab", "up", "alt+k"),
-		key.WithHelp("up", "navigate up"),
+		key.WithKeys("shift+tab", "up", "k"),
+		key.WithHelp("k", "navigate up"),
 	),
 	Open: key.NewBinding(
 		key.WithKeys("enter", "return", "l"),
 		key.WithHelp("enter", "open session"),
 	),
+	Delete: key.NewBinding(
+		key.WithKeys("d", "backspace"),
+		key.WithHelp("d", "delete session"),
+	),
 }
 
 func DisplayList() {
-	p := tea.NewProgram(initModel())
+	logPath := fmt.Sprintf("%s/tmarks/tui.log", xdg.DataHome)
+	l, err := tea.LogToFile(logPath, "debug")
+	if err != nil {
+		utils.HandleFatalError("creating log file", err)
+	}
+	p := tea.NewProgram(initModel(l))
 	if _, err := p.Run(); err != nil {
 		utils.HandleFatalError("display list", err)
 	}
+	l.Close()
 }
 
-func initModel() model {
+func initModel(log *os.File) model {
 	return model{
+		log:       log,
 		bookmarks: []bookmark{},
 		cursor:    0,
 		help:      help.New(),
@@ -107,16 +124,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Open):
 			sn := m.bookmarks[m.cursor].name
 			return m, openTmuxSession(sn)
+		case key.Matches(msg, m.keys.Delete):
+			sn := m.bookmarks[m.cursor].name
+			return m, deleteBookmark(sn)
 		}
 	case bookmarksRetrievedMsg:
 		m.bookmarks = msg.bookmarks
 	case sessionOpenedMsg:
 		m.quittingMessage = "\nLaunching the '" + msg.sessionName + "' session..."
 		return m, tea.Quit
+	case bookmarkDeletedMsg:
+		m.clearMessages()
+		m.successMessage = "Bookmark '" + msg.sessionName + "' deleted."
+		if m.cursor > 0 {
+			m.cursor--
+		}
+		return m, getAllBookmarks
 	case sessionNotFound:
+		m.clearMessages()
 		m.nonFatalErrorMessage = "Unable to open '" + msg.sessionName + "': no running session with that name found."
 	}
 	return m, nil
+}
+
+func (m *model) clearMessages() {
+	(*m).successMessage = ""
+	(*m).nonFatalErrorMessage = ""
 }
 
 func (m model) View() string {
@@ -139,6 +172,9 @@ func (m model) View() string {
 		}
 	} else {
 		sb.WriteString("No bookmarks saved...\n")
+	}
+	if len(m.successMessage) > 0 {
+		sb.WriteString("\n" + m.successMessage + "\n")
 	}
 	if len(m.nonFatalErrorMessage) > 0 {
 		sb.WriteString("\n" + m.nonFatalErrorMessage + "\n")

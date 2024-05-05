@@ -13,7 +13,6 @@ import (
 )
 
 type Bookmark struct {
-	Id   string
 	Name string
 }
 
@@ -86,12 +85,12 @@ func createBookmarkForCurrentSession() Bookmark {
 		utils.HandleFatalError("obtaining tmux session name", err)
 	}
 	cleanSessionName := strings.ReplaceAll(string(sessionName), "\n", "")
-	return Bookmark{Id: cleanSessionName, Name: cleanSessionName}
+	return Bookmark{Name: cleanSessionName}
 }
 
 func addBookmarkToArray(as *appState, b Bookmark) {
 	exists := slices.ContainsFunc((*as).Bookmarks, func(cb Bookmark) bool {
-		return b.Id == cb.Id
+		return b.Name == cb.Name
 	})
 	if !exists {
 		(*as).Bookmarks = append(as.Bookmarks, b)

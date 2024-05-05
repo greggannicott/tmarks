@@ -7,7 +7,6 @@ import (
 )
 
 type bookmark struct {
-	id   string
 	name string
 }
 
@@ -23,7 +22,6 @@ func getAllBookmarks() tea.Msg {
 	var bks []bookmark
 	for _, v := range bookmarks.GetAll() {
 		bks = append(bks, bookmark{
-			id:   v.Id,
 			name: v.Name,
 		})
 	}

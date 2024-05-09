@@ -42,3 +42,11 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^ci:"
+
+brews:
+  - name: tmarks
+    homepage: https://github.com/greggannicott/tmarks
+    repository:
+      owner: greggannicott
+      name: homebrew-tools
+

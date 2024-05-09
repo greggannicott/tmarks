@@ -1,12 +1,10 @@
 package tui
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"tmarks/utils"
 
-	"github.com/adrg/xdg"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -74,17 +72,11 @@ var DefaultKeyMap = keyMap{
 	),
 }
 
-func DisplayList() {
-	logPath := fmt.Sprintf("%s/tmarks/tui.log", xdg.DataHome)
-	l, err := tea.LogToFile(logPath, "debug")
-	if err != nil {
-		utils.HandleFatalError("creating log file", err)
-	}
-	p := tea.NewProgram(initModel(l))
+func DisplayList(log *os.File) {
+	p := tea.NewProgram(initModel(log))
 	if _, err := p.Run(); err != nil {
 		utils.HandleFatalError("display list", err)
 	}
-	l.Close()
 }
 
 func initModel(log *os.File) model {

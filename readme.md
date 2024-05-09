@@ -14,6 +14,27 @@ If you are working with a specific set of sessions, rather than having to choose
 
 You choose which sessions do and do not appear in the list.
 
+## Installation
+
+### Homebrew
+
+Install with:
+
+```bash
+brew install greggannicott/tools/tmarks
+```
+
+Update to the latest version using:
+
+```bash
+brew update
+brew upgrade tmarks
+```
+
+### Other
+
+Looking for an alternative way to install it? Please create an issue and we'll attempt to provide it.
+
 ## Usage
 
 ### Adding Current Session

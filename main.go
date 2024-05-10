@@ -56,7 +56,7 @@ func getLogFile() *os.File {
 		os.MkdirAll(appDirPath, 0777)
 	}
 
-	logPath := fmt.Sprintf("%s/tui.log", appDirPath)
+	logPath := fmt.Sprintf("%s/tmarks.log", appDirPath)
 	l, err := tea.LogToFile(logPath, "debug")
 	if err != nil {
 		utils.HandleFatalError("creating log file", err)

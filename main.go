@@ -17,6 +17,7 @@ var Version = "Development"
 
 func main() {
 	l := getLogFile()
+	utils.SetLog(l)
 	app := &cli.App{
 		Name:            "tmarks",
 		Usage:           "Bookmarks for tmux",
